@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment Verification</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #0f2027, #203a43, #2c5364);
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      animation: fadeInDown 1s ease-out;
+    }
+
+    .mpesa-number {
+      font-size: 1.2rem;
+      background: #2ecc71;
+      padding: 12px 24px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      animation: fadeIn 1.5s ease-out;
+      box-shadow: 0 0 15px #2ecc71aa;
+    }
+
+    input[type="text"] {
+      padding: 12px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 10px;
+      width: 270px;
+      margin-bottom: 20px;
+      transition: box-shadow 0.3s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      box-shadow: 0 0 10px #3498db;
+    }
+
+    button {
+      padding: 12px 30px;
+      font-size: 1.1rem;
+      background: #3498db;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      overflow: hidden;
+      position: relative;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      background: #2980b9;
+      transform: scale(1.05);
+    }
+
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+
+    .loader {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+
+    .verified {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #2ecc71;
+      position: relative;
+      animation: pop 0.5s ease forwards;
+      margin-left: 10px;
+    }
+
+    .verified::after {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 10px;
+      width: 6px;
+      height: 12px;
+      border: solid white;
+      border-width: 0 3px 3px 0;
+      transform: rotate(45deg);
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Pay with M-Pesa</h1>
+  <div class="mpesa-number">Send money to: <strong>0793660659</strong></div>
+
+  <input id="txCode" type="text" placeholder="Enter transaction code" />
+  <button id="verifyBtn">Verify Payment</button>
+
+  <script>
+    const verifyBtn = document.getElementById('verifyBtn');
+    const txCodeInput = document.getElementById('txCode');
+
+    verifyBtn.addEventListener('click', async () => {
+      const txCode = txCodeInput.value.trim();
+      if (!txCode) {
+        alert('Please enter your transaction code!');
+        return;
+      }
+
+      verifyBtn.disabled = true;
+      verifyBtn.innerHTML = 'Verifying <span class="loader"></span>';
+
+      // Simulate verification delay
+      setTimeout(async () => {
+        try {
+          const res = await fetch('/pay', { method: 'POST' });
+
+          if (res.redirected) {
+            verifyBtn.innerHTML = 'Payment Verified <span class="verified"></span>';
+            setTimeout(() => {
+              window.location.href = res.url;
+            }, 1500);
+          } else {
+            verifyBtn.innerHTML = 'Verification failed';
+            verifyBtn.disabled = false;
+          }
+        } catch (err) {
+          verifyBtn.innerHTML = 'Network error';
+          verifyBtn.disabled = false;
+        }
+      }, 3000);
+    });
+  </script>
+</body>
+</html>
