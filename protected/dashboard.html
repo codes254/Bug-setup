@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aviator Predictor Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white min-h-screen flex items-center justify-center px-4">
+
+  <div class="backdrop-blur-md bg-gray-800/70 rounded-3xl shadow-2xl p-8 w-full max-w-md border border-gray-700">
+    
+    <div class="mb-6 text-center">
+      <h1 class="text-3xl font-bold text-red-400 mb-1">Aviator Predictor</h1>
+      <p id="welcome" class="text-sm text-gray-400">Welcome, <span id="username">...</span>!</p>
+      <p id="daysLeft" class="text-xs text-green-400">Loading subscription info...</p>
+    </div>
+
+    <div class="text-center mb-6">
+      <p class="text-lg text-gray-300">Next Crash Prediction:</p>
+      <p id="prediction" class="text-4xl font-bold text-green-400 mt-2 animate-pulse">--</p>
+    </div>
+
+    <button onclick="predictCrash()" class="w-full py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:brightness-110 transition rounded-xl text-lg font-semibold">
+      Get Prediction
+    </button>
+
+    <div class="mt-8">
+      <h2 class="text-lg font-semibold text-gray-200 mb-2">Recent Predictions</h2>
+      <ul id="history" class="space-y-1 text-gray-400 text-sm max-h-40 overflow-y-auto pr-2">
+        <!-- History items -->
+      </ul>
+    </div>
+
+    <div class="mt-6 text-center">
+      <a href="/logout" class="text-sm text-gray-400 hover:text-red-400 transition">Logout</a>
+    </div>
+  </div>
+
+<script>
+  function getRandomPrediction() {
+    let rand = (Math.random() * (20 - 1.01) + 1.01).toFixed(2);
+    return rand + 'x';
+  }
+
+  function predictCrash() {
+    const prediction = getRandomPrediction();
+    document.getElementById('prediction').textContent = prediction;
+
+    const li = document.createElement('li');
+    li.textContent = `Prediction: ${prediction}`;
+    document.getElementById('history').prepend(li);
+  }
+
+  async function loadDashboardData() {
+    try {
+      const res = await fetch('/dashboard-data');
+      if (res.status === 403) {
+        window.location.href = '/payment.html'; // subscription expired
+      } else if (!res.ok) {
+        window.location.href = '/login.html'; // not logged in
+      } else {
+        const data = await res.json();
+        document.getElementById('username').textContent = data.username;
+        document.getElementById('daysLeft').textContent = `Subscription valid for ${data.daysLeft} day(s)`;
+      }
+    } catch (err) {
+      window.location.href = '/login.html';
+    }
+  }
+
+  loadDashboardData();
+</script>
+</body>
+</html>
